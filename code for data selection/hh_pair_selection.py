@@ -9,11 +9,8 @@ from collections import defaultdict
 import random
 import numpy as np
 from torch.nn.utils.rnn import pad_sequence
-from utils import (
-    get_local_dir,TemporarilySeededRandom
-)
+from utils import get_local_dir
 from torch.nn import DataParallel
-#from preference_datasets import tokenize_batch_element
 import pandas as pd
 from sklearn.cluster import AgglomerativeClustering, KMeans
 from scipy.spatial.distance import cdist
@@ -32,11 +29,6 @@ class TextDataset(Dataset):
 
     def __getitem__(self, idx):
         prompt_chosen,prompt_rejected,chosen,rejected = self.data[idx]
-        #prompt = item['prompt']
-        #chosen = item['chosen']
-        #rejected = item['rejected']
-
-        # Tokenize the sequences
         chosen_tokens = self.tokenizer(chosen, truncation=True, padding='max_length', max_length=self.max_length, return_tensors='pt')
         rejected_tokens = self.tokenizer(rejected, truncation=True, padding='max_length', max_length=self.max_length, return_tensors='pt')
 
@@ -56,11 +48,10 @@ def extract_anthropic_prompt(prompt_and_response):
     assert search_term_idx != -1, f"Prompt and response does not contain '{search_term}'"
     return prompt_and_response[:search_term_idx + len(search_term)]
     
-def get_hh(split: str,data_dir:str, silent: bool = False, cache_dir: str = None):
+def get_data(split: str,data_dir:str, silent: bool = False, cache_dir: str = None):
 
     print(f'Loading HH dataset ({split} split) from Huggingface...')
-    #dataset = datasets.load_dataset('honggen/HH_3responses', split='train', data_dir=data_dir, cache_dir=cache_dir)
-    dataset = datasets.load_dataset('Anthropic/hh-rlhf', split='train[:]',data_dir = 'helpful-base', cache_dir=cache_dir)
+    dataset = datasets.load_dataset('Anthropic/hh-rlhf', split='train[:]',data_dir = 'harmless-base', cache_dir=cache_dir)
     print('done')
 
     data = []
@@ -78,28 +69,18 @@ def get_hh(split: str,data_dir:str, silent: bool = False, cache_dir: str = None)
 
                 
 
-#model_name = "bert-large-uncased"
-#model = BertModel.from_pretrained(model_name)
-#tokenizer = BertTokenizer.from_pretrained(model_name)
-
-#state_dict = torch.load('./cache/honggen/pythia_helpbase-sft/LATEST/policy.pt', map_location='cpu')
-#model.load_state_dict(state_dict['state'])
 
 device = torch.device('cuda')
 model = transformers.AutoModelForCausalLM.from_pretrained('microsoft/phi-1.5',token='',cache_dir=get_local_dir('./cache'), torch_dtype=torch.float16,output_hidden_states = True)
 
-#state_dict = torch.load('./cache/honggen/pythia_harm_sft/LATEST/policy.pt', map_location='cpu')
-#model.load_state_dict(state_dict['state'])
-
 model = model.to(device)
 model = torch.nn.DataParallel(model)
 
-data = get_hh(split='train' , data_dir = None, cache_dir = './cache/huggingface/datasets')
+data = get_data(split='train' , data_dir = None, cache_dir = './cache/huggingface/datasets')
 
 dataset = TextDataset(data,tokenizer_name='microsoft/phi-1.5')
 truncation_mode = 'keep_end'
 dataloader = DataLoader(dataset, batch_size=8, shuffle=True)
-    #print(flat_data[:5])
 all_chosen = []
 all_rejected = []
 all_sim = []
@@ -130,8 +111,6 @@ big_data['rejected'] = all_rejected
 big_data['sim'] = all_sim
 df = pd.DataFrame(big_data)
 df_sorted = df.sort_values(by='sim')
-#file_name = './data_hh_harm/random/'+'train_llama_sort.jsonl'
-#df_sorted.to_json(file_name, orient='records', lines=True)
 
 
 
@@ -146,7 +125,6 @@ df_sorted[-num_sample:].to_json(file_name, orient='records', lines=True)
 df_sampled = df.sample(frac=0.5)
 file_name = './data_hh_harm/random/'+'train_pi.jsonl'
 df_sampled.to_json(file_name, orient='records', lines=True)
-#print(df_sampled)
 
 
 
