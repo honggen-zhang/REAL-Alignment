@@ -111,7 +111,7 @@ def main(config: DictConfig):
     policy_dtype = getattr(torch, config.model.policy_dtype)
     print(config.model.name_or_path)
     policy = transformers.AutoModelForCausalLM.from_pretrained(
-        config.model.name_or_path,token='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',trust_remote_code=True, cache_dir=get_local_dir(config.local_dirs), low_cpu_mem_usage=True, torch_dtype=policy_dtype, **model_kwargs)
+        config.model.name_or_path,token='',trust_remote_code=True, cache_dir=get_local_dir(config.local_dirs), low_cpu_mem_usage=True, torch_dtype=policy_dtype, **model_kwargs)
     #policy = transformers.AutoModelForCausalLM.from_pretrained(
         #config.model.name_or_path,trust_remote_code=True, cache_dir=get_local_dir(config.local_dirs), low_cpu_mem_usage=True, torch_dtype=policy_dtype, **model_kwargs)
     disable_dropout(policy)
@@ -123,7 +123,7 @@ def main(config: DictConfig):
         print('building reference model')
         reference_model_dtype = getattr(torch, config.model.reference_dtype)
         reference_model = transformers.AutoModelForCausalLM.from_pretrained(
-            config.model.name_or_path,token='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', cache_dir=get_local_dir(config.local_dirs), low_cpu_mem_usage=True, torch_dtype=reference_model_dtype, **model_kwargs)
+            config.model.name_or_path,token='', cache_dir=get_local_dir(config.local_dirs), low_cpu_mem_usage=True, torch_dtype=reference_model_dtype, **model_kwargs)
         #reference_model = transformers.AutoModelForCausalLM.from_pretrained(
             #config.model.name_or_path,cache_dir=get_local_dir(config.local_dirs), low_cpu_mem_usage=True, torch_dtype=reference_model_dtype, **model_kwargs)
         disable_dropout(reference_model)
