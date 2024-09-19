@@ -9,9 +9,7 @@ from collections import defaultdict
 import random
 import numpy as np
 from torch.nn.utils.rnn import pad_sequence
-from utils import (
-    get_local_dir,TemporarilySeededRandom
-)
+from utils import get_local_dir
 from torch.nn import DataParallel
 import pandas as pd
 from sklearn.cluster import AgglomerativeClustering, KMeans
