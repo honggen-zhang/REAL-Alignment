@@ -82,16 +82,8 @@ def get_hh(split: str, silent: bool = False, cache_dir: str = None) -> Dict[str,
 
 
 def get_dataset(name: str, split: str, silent: bool = False, cache_dir: str = None):
-    """Load the given dataset by name. Supported by default are 'shp', 'hh', and 'se'."""
-    if name == 'shp':
-        data = get_shp(split, silent=silent, cache_dir=cache_dir)
-    elif name == 'hh':
-        data = get_hh(split, silent=silent, cache_dir=cache_dir)
-    elif name == 'se':
-        data = get_se(split, silent=silent, cache_dir=cache_dir)
-    else:
-        raise ValueError(f"Unknown dataset '{name}'")
 
+    data = get_hh(split, silent=silent, cache_dir=cache_dir)
     assert set(list(data.values())[0].keys()) == {'responses', 'pairs', 'sft_target'}, \
         f"Unexpected keys in dataset: {list(list(data.values())[0].keys())}"
 
@@ -237,12 +229,9 @@ def get_batch_iterator(names: List[str],
         datasets.logging.disable_progress_bar()
         datasets.logging.set_verbosity_error()
     with TemporarilySeededRandom(seed):
-        #permutation_seeds = iter(np.random.randint(0, 2**16, size=100000))
-        #permutation_seeds = np.random.randint(0, 2**16)
-        #print('++++++++++++known-seed',torch.rand(2))
         flat_data = []
         for name in names:
-            truncation_mode = 'keep_start' if name == 'hh' else 'keep_start'
+            truncation_mode = 'keep_start'
             for prompt, data in get_dataset(name, split, silent=silent, cache_dir=cache_dir).items():
                 flat_data.append((prompt, data['responses'], data['pairs'], data['sft_target'], truncation_mode))
 
