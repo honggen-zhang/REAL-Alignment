@@ -21,4 +21,7 @@ python -u train.py model=llama2-7b datasets=[hh] loss=dpo loss.beta=0.1 exp_name
 ## Response generate and evaluate
 To generate the response from the dialogue, we load the models after DPO fine-tuning. **eva_generator.py** and **eva_pairs_bias.py** used to generate responses and extract the training pairs, respectively.
 
+## Acknowledgements
 
+Part of our code is inspired by 
+https://github.com/eric-mitchell/direct-preference-optimization/tree/main
